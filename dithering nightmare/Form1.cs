@@ -182,7 +182,5 @@ namespace dithering_nightmare{
             outpbox.Image = outp;
 
         }
-
-
     }
 }
