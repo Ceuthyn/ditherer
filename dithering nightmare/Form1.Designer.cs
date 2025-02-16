@@ -58,13 +58,13 @@
             this.brightness.AutoSize = false;
             this.brightness.Location = new System.Drawing.Point(6, 19);
             this.brightness.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.brightness.Maximum = 5;
-            this.brightness.Minimum = -5;
+            this.brightness.Minimum = -10;
             this.brightness.Name = "brightness";
             this.brightness.Size = new System.Drawing.Size(104, 45);
             this.brightness.TabIndex = 0;
+            this.brightness.TickFrequency = 2;
             this.brightness.TickStyle = System.Windows.Forms.TickStyle.Both;
-            this.brightness.Scroll += new System.EventHandler(this.trackBar1_Scroll);
+            this.brightness.Scroll += new System.EventHandler(this.brightness_Scroll);
             // 
             // groupBox1
             // 
@@ -95,12 +95,14 @@
             this.contrast.AutoSize = false;
             this.contrast.Location = new System.Drawing.Point(6, 19);
             this.contrast.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.contrast.Maximum = 5;
-            this.contrast.Minimum = -5;
+            this.contrast.Maximum = 50;
+            this.contrast.Minimum = -100;
             this.contrast.Name = "contrast";
             this.contrast.Size = new System.Drawing.Size(104, 45);
             this.contrast.TabIndex = 0;
+            this.contrast.TickFrequency = 20;
             this.contrast.TickStyle = System.Windows.Forms.TickStyle.Both;
+            this.contrast.Scroll += new System.EventHandler(this.contrast_Scroll);
             // 
             // imgsel
             // 
