@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace dithering_nightmare{
     public partial class Form1: Form{
-        List<Color> palette = new List<Color>{Color.FromArgb(0,0,0)};
+        List<Color> palette = new List<Color>{Color.FromArgb(0,0,0),Color.FromArgb(255,255,255)};
         Bitmap img;
         Bitmap outp;
         int width;
@@ -40,6 +40,7 @@ namespace dithering_nightmare{
                 return; //idk man just fail
             }
             inpbox.Image = this.img;
+            rend();
         }
 
         private void upddat() {
@@ -98,14 +99,74 @@ namespace dithering_nightmare{
             rend();
         }
 
-        private int clampedadd(int a, int b){
-            return Math.Max(Math.Min(a + b, 768), 0);
+        private Int16 clampedadd(int a, int b){
+            return (short)Math.Max(Math.Min(a + b, 768), 0);
         }
 
-
+        private Color selc(Int16 r, Int16 g, Int16 b){
+            Color opt = Color.FromArgb(255, 255, 0); //if this ever appears without being in the palette, something went wrong
+            int minerr = int.MaxValue;
+            for(int i = 0; i<this.palette.Count; i++){
+                int err = Math.Abs(r - this.palette[i].R) + Math.Abs(g - this.palette[i].G) + Math.Abs(b - this.palette[i].B);
+                if(err < minerr){
+                    minerr = err;
+                    opt = this.palette[i];
+                    if (err <= 1) return opt;
+                 }
+            }
+            return opt;
+        }
 
         private void rend(){
+            if(this.palette.Count <= 0 || this.img == null){
+                //MessageBox.Show("error", "add more colors before trying to dither", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            outp = new Bitmap(this.img.Width, this.img.Height);
+            Int16[] err = new Int16[this.img.Width * this.img.Height * 4]; //probably not the best option meh
+            for(int y = 0; y<this.img.Height; y++){
+                for(int x = 0; x<this.img.Width; x++){
+                    Color p = this.img.GetPixel(x, y);
+                    err[(x + y * this.img.Width) * 4] = p.R;
+                    err[(x + y * this.img.Width) * 4 +1] = p.G;
+                    err[(x + y * this.img.Width) * 4 +2] = p.B;
+                    err[(x + y * this.img.Width) * 4 +3] = p.A;
+                }
+            }
+            for(int y = 0; y<this.img.Height; y++){
+                for(int x = 0; x<this.img.Width; x++){
+                    Color col = selc(err[(x + y * this.img.Width) * 4], err[(x + y * this.img.Width) * 4 + 1], err[(x + y * this.img.Width) * 4 + 2]);
+                    //col = Color.FromArgb(this.img.GetPixel(x, y).A, col);
+                    outp.SetPixel(x, y, col);
+                    Int16 errr = (short)((Int16) err[(x + y * this.img.Width) * 4] - col.R);
+                    Int16 errg = (short)((Int16) err[(x + y * this.img.Width) * 4 +1] - col.G);
+                    Int16 errb = (short)((Int16) err[(x + y * this.img.Width) * 4 +2] - col.B);
 
+                    if(x != 0 && y != this.img.Width - 1){
+                        err[(x - 1 + (y + 1) * this.img.Width) * 4] = clampedadd(err[(x - 1 + (y + 1) * this.img.Width) * 4], errr * 3 / 16);
+                        err[(x - 1 + (y + 1) * this.img.Width) * 4 +1] = clampedadd(err[(x - 1 + (y + 1) * this.img.Width) * 4 +1], errg * 3 / 16);
+                        err[(x - 1 + (y + 1) * this.img.Width) * 4 +2] = clampedadd(err[(x - 1 + (y + 1) * this.img.Width) * 4 +2], errb * 3 / 16);
+                    }
+                    if (x != this.img.Width-1){
+                        err[(x + 1 + (y) * this.img.Width) * 4] = clampedadd(err[(x + 1 + (y) * this.img.Width) * 4], errr * 7 / 16);
+                        err[(x + 1 + (y) * this.img.Width) * 4 + 1] = clampedadd(err[(x + 1 + (y) * this.img.Width) * 4 + 1], errg * 7 / 16);
+                        err[(x + 1 + (y) * this.img.Width) * 4 + 2] = clampedadd(err[(x + 1 + (y) * this.img.Width) * 4 + 2], errb * 7 / 16);
+                    }
+                    if (y != this.img.Width - 1){
+                        err[(x + (y + 1) * this.img.Width) * 4] = clampedadd(err[(x + (y + 1) * this.img.Width) * 4], errr * 5 / 16);
+                        err[(x + (y + 1) * this.img.Width) * 4 + 1] = clampedadd(err[(x + (y + 1) * this.img.Width) * 4 + 1], errg * 5 / 16);
+                        err[(x + (y + 1) * this.img.Width) * 4 + 2] = clampedadd(err[(x + (y + 1) * this.img.Width) * 4 + 2], errb * 5 / 16);
+                    }
+                    if (x != this.img.Width-1 && y != this.img.Width - 1)
+                    {
+                        err[(x + 1 + (y + 1) * this.img.Width) * 4] = clampedadd(err[(x + 1 + (y + 1) * this.img.Width) * 4], errr * 1 / 16);
+                        err[(x + 1 + (y + 1) * this.img.Width) * 4 + 1] = clampedadd(err[(x + 1 + (y + 1) * this.img.Width) * 4 + 1], errg * 1 / 16);
+                        err[(x + 1 + (y + 1) * this.img.Width) * 4 + 2] = clampedadd(err[(x + 1 + (y + 1) * this.img.Width) * 4 + 2], errb * 1 / 16);
+                    }
+
+                }
+            }
+            outpbox.Image = outp;
 
         }
 
