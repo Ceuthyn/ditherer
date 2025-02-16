@@ -10,7 +10,8 @@ to reduce the color palette of any given image to a user defined one, be it for 
 2. add/remove colors from the palette using the add/remove color buttons
 3. adjust brightness and contrast if necessary
 4. save the resulting image using the save image button
-![example](/img/example.png)
+
+  ![example](/img/example.png)
 
 ## known issues
 - input and output image possibly in the window, saved image unaffected
